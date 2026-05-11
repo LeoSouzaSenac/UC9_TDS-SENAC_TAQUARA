@@ -126,44 +126,58 @@ namespace LoginApp
             string password = txtPassword.Text;
 
             // pega conexão com banco
-            using (var conn = Database.GetConnection())
+            // O "using" garante que a conexão com o banco será fechada automaticamente
+// assim que o bloco terminar, mesmo que aconteça um erro.
+using (var conn = Database.GetConnection())
+{
+    // SQL que busca a senha (hash) do usuário no banco de dados
+    // O @user é um parâmetro para evitar SQL Injection (ataques no banco)
+    string sql = "SELECT password FROM users WHERE username=@user";
+
+    // "using" também aqui garante que o comando será liberado depois de usado
+    using (var cmd = new MySqlCommand(sql, conn))
+    {
+        // Aqui estamos passando o valor do username para o parâmetro @user
+        // Isso evita concatenação direta de strings e aumenta a segurança
+        cmd.Parameters.AddWithValue("@user", username);
+
+        // Executa o comando SQL e retorna apenas o primeiro valor encontrado
+        // Nesse caso, será a senha (hash) do usuário
+        var result = cmd.ExecuteScalar();
+
+        // Se "result" não for nulo, significa que o usuário foi encontrado no banco
+        if (result != null)
+        {
+            // Converte o resultado para string (o hash da senha)
+            string hash = result.ToString();
+
+            // Compara a senha digitada com o hash armazenado no banco
+            // BCrypt faz a comparação segura de senha (não compara texto puro)
+            if (BCrypt.Net.BCrypt.Verify(password, hash))
             {
-                // busca senha do usuário no banco
-                string sql = "SELECT password FROM users WHERE username=@user";
+                // Se a senha estiver correta, mostra mensagem de sucesso
+                MessageBox.Show("Login realizado!");
 
-                using (var cmd = new MySqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@user", username);
+                // Cria e abre a tela principal do sistema
+                FormMain main = new FormMain(username);
+                main.Show();
 
-                    var result = cmd.ExecuteScalar();
-
-                    // se encontrou usuário
-                    if (result != null)
-                    {
-                        string hash = result.ToString();
-
-                        // compara senha digitada com hash
-                        if (BCrypt.Net.BCrypt.Verify(password, hash))
-                        {
-                            MessageBox.Show("Login realizado!");
-
-                            // abre tela principal
-                            FormMain main = new FormMain(username);
-                            main.Show();
-                            this.Hide();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Senha incorreta!");
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Usuário não encontrado!");
-                    }
-                }
+                // Esconde a tela de login atual
+                this.Hide();
+            }
+            else
+            {
+                // Se o hash não bater com a senha digitada
+                MessageBox.Show("Senha incorreta!");
             }
         }
+        else
+        {
+            // Se não encontrou nenhum usuário com esse username
+            MessageBox.Show("Usuário não encontrado!");
+        }
+    }
+}
 
         // =========================
         // BOTÃO DE CADASTRO
