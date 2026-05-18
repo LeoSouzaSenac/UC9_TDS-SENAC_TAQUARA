@@ -1,43 +1,79 @@
-# **Tutorial simples: Login/Logout em C# Windows Forms (.NET) com MySQL e BCrypt**
+# Tutorial Simples: Login/Logout em C# Windows Forms (.NET) com MySQL e BCrypt
 
-## **🎯 Objetivo**
+## Objetivo
 
-Criar um sistema simples de:
+Neste projeto vamos aprender:
 
-* Cadastro de usuário
-* Login
-* Logout
-* Senhas criptografadas com BCrypt
+* Como criar um sistema de login
+* Como conectar C# com MySQL
+* Como cadastrar usuários
+* Como funciona criptografia de senha
+* Como usar BCrypt
+* Como funciona comunicação com banco de dados
+
+Tudo explicado de forma simples e comentada.
 
 ---
 
-# **1️⃣ Criar Projeto**
+# 1. Criando o Projeto
 
 1. Abra o Visual Studio
-2. Clique em **Create a new project**
+2. Clique em:
+
+```text id="qf4vud"
+Create a new project
+```
+
 3. Escolha:
-   👉 Windows Forms App (.NET)
-4. Nome: `LoginApp`
-5. Criar
+
+```text id="2f2ovl"
+Windows Forms App (.NET)
+```
+
+4. Nome do projeto:
+
+```text id="55xb1g"
+LoginApp
+```
+
+5. Clique em Create
 
 ---
 
-# **2️⃣ Instalar pacotes NuGet**
+# 2. Instalando Pacotes NuGet
 
-Clique com botão direito no projeto:
+## O que é NuGet?
 
-**Manage NuGet Packages → Install:**
+NuGet é o sistema de bibliotecas do C#.
+
+Ele permite instalar funcionalidades prontas.
+
+---
+
+## Instale:
 
 * `MySql.Data`
 * `BCrypt.Net-Next`
 
 ---
 
-# **3️⃣ Criar Banco de Dados MySQL**
+## Como instalar
 
-Execute no MySQL:
+Clique com botão direito no projeto:
 
-```sql
+```text id="v5z4ej"
+Manage NuGet Packages
+```
+
+Depois procure e instale os pacotes.
+
+---
+
+# 3. Criando o Banco de Dados
+
+Execute esse SQL no MySQL:
+
+```sql id="vb81h9"
 CREATE DATABASE login_system;
 
 USE login_system;
@@ -51,35 +87,89 @@ CREATE TABLE users (
 
 ---
 
-# **4️⃣ Criar classe de conexão com banco**
+# Explicando o Banco
 
-Crie um arquivo: **Database.cs**
+## `CREATE DATABASE`
 
-```csharp
+Cria o banco.
+
+---
+
+## `CREATE TABLE`
+
+Cria uma tabela.
+
+---
+
+## `AUTO_INCREMENT`
+
+O número aumenta sozinho.
+
+---
+
+## `PRIMARY KEY`
+
+Identificador único.
+
+---
+
+## `VARCHAR(50)`
+
+Texto de até 50 caracteres.
+
+---
+
+## `UNIQUE`
+
+Impede usuários repetidos.
+
+---
+
+# 4. Criando Classe de Conexão
+
+Crie um arquivo chamado:
+
+```text id="m8ev08"
+Database.cs
+```
+
+---
+
+# Código Completo do Database.cs
+
+```csharp id="w7mg0h"
 using MySql.Data.MySqlClient;
 using System;
 
 namespace LoginApp
 {
+    // Classe responsável pela conexão com o banco
+    // "static" significa que podemos usar ela sem criar objeto
     public static class Database
     {
-        // string de conexão com o banco
+        // String de conexão
+        // Aqui informamos:
+        // servidor, banco, usuário e senha
         private static string connectionString =
             "server=localhost;database=login_system;uid=root;pwd=sua_senha;";
 
+        // Método responsável por abrir conexão
         public static MySqlConnection GetConnection()
         {
-            // cria conexão
+            // Cria objeto de conexão
             MySqlConnection conn = new MySqlConnection(connectionString);
 
             try
             {
-                conn.Open(); // abre conexão com o banco
+                // Tenta abrir conexão com o banco
+                conn.Open();
+
+                // Retorna conexão aberta
                 return conn;
             }
             catch (Exception ex)
             {
-                // erro de conexão
+                // Caso dê erro, mostra mensagem
                 throw new Exception("Erro ao conectar: " + ex.Message);
             }
         }
@@ -89,20 +179,116 @@ namespace LoginApp
 
 ---
 
-# **5️⃣ Criar FormLogin**
+# Explicando as partes importantes
 
-No FormLogin adicione:
+## `using`
 
-* TextBox: `txtUsername`
-* TextBox: `txtPassword` (PasswordChar = '*')
-* Button: `btnLogin`
-* Button: `btnRegister`
+```csharp id="0d1jdf"
+using MySql.Data.MySqlClient;
+```
+
+Importa ferramentas do MySQL.
 
 ---
 
-## **📌 Código do FormLogin**
+## `namespace`
 
-```csharp
+```csharp id="b5fqyl"
+namespace LoginApp
+```
+
+Organiza o projeto.
+
+É como uma pasta lógica.
+
+---
+
+## `public static class`
+
+```csharp id="84i8b8"
+public static class Database
+```
+
+Criamos uma classe chamada Database.
+
+---
+
+## O que é classe?
+
+Classe é um molde.
+
+Exemplo:
+
+* Classe Carro
+* Classe Pessoa
+* Classe Database
+
+---
+
+## O que é objeto?
+
+Objeto é algo criado a partir da classe.
+
+Exemplo:
+
+```csharp id="6dd8b4"
+MySqlConnection conn
+```
+
+`conn` é um objeto.
+
+---
+
+## String de conexão
+
+```csharp id="6nvf6z"
+"server=localhost;database=login_system;uid=root;pwd=sua_senha;"
+```
+
+Explicando:
+
+| Parte                 | Significado          |
+| --------------------- | -------------------- |
+| server=localhost      | banco está no seu PC |
+| database=login_system | nome do banco        |
+| uid=root              | usuário do MySQL     |
+| pwd=sua_senha         | senha do MySQL       |
+
+---
+
+# 5. Criando o FormLogin
+
+No formulário adicione:
+
+## TextBox
+
+* `txtUsername`
+* `txtPassword`
+
+---
+
+## PasswordChar
+
+No `txtPassword` coloque:
+
+```text id="ozsyl2"
+PasswordChar = *
+```
+
+Isso esconde a senha.
+
+---
+
+## Buttons
+
+* `btnLogin`
+* `btnRegister`
+
+---
+
+# Código Completo do FormLogin
+
+```csharp id="8f4z9u"
 using System;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
@@ -112,100 +298,116 @@ namespace LoginApp
 {
     public partial class FormLogin : Form
     {
+        // Construtor da tela
+        // Executa quando o formulário abre
         public FormLogin()
         {
             InitializeComponent();
         }
 
-        // =========================
-        // BOTÃO DE LOGIN
-        // =========================
+        // =====================================================
+        // BOTÃO LOGIN
+        // =====================================================
         private void btnLogin_Click(object sender, EventArgs e)
         {
+            // Pega texto digitado nas caixas
+            // Trim() remove espaços extras
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text;
 
-            // pega conexão com banco
-            // O "using" garante que a conexão com o banco será fechada automaticamente
-// assim que o bloco terminar, mesmo que aconteça um erro.
-using (var conn = Database.GetConnection())
-{
-    // SQL que busca a senha (hash) do usuário no banco de dados
-    // O @user é um parâmetro para evitar SQL Injection (ataques no banco)
-    string sql = "SELECT password FROM users WHERE username=@user";
-
-    // "using" também aqui garante que o comando será liberado depois de usado
-    using (var cmd = new MySqlCommand(sql, conn))
-    {
-        // Aqui estamos passando o valor do username para o parâmetro @user
-        // Isso evita concatenação direta de strings e aumenta a segurança
-        cmd.Parameters.AddWithValue("@user", username);
-
-        // Executa o comando SQL e retorna apenas o primeiro valor encontrado
-        // Nesse caso, será a senha (hash) do usuário
-        var result = cmd.ExecuteScalar();
-
-        // Se "result" não for nulo, significa que o usuário foi encontrado no banco
-        if (result != null)
-        {
-            // Converte o resultado para string (o hash da senha)
-            string hash = result.ToString();
-
-            // Compara a senha digitada com o hash armazenado no banco
-            // BCrypt faz a comparação segura de senha (não compara texto puro)
-            if (BCrypt.Net.BCrypt.Verify(password, hash))
-            {
-                // Se a senha estiver correta, mostra mensagem de sucesso
-                MessageBox.Show("Login realizado!");
-
-                // Cria e abre a tela principal do sistema
-                FormMain main = new FormMain(username);
-                main.Show();
-
-                // Esconde a tela de login atual
-                this.Hide();
-            }
-            else
-            {
-                // Se o hash não bater com a senha digitada
-                MessageBox.Show("Senha incorreta!");
-            }
-        }
-        else
-        {
-            // Se não encontrou nenhum usuário com esse username
-            MessageBox.Show("Usuário não encontrado!");
-        }
-    }
-}
-
-        // =========================
-        // BOTÃO DE CADASTRO
-        // =========================
-        private void btnRegister_Click(object sender, EventArgs e)
-        {
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Text;
-
-            // cria hash da senha (não salva senha pura!)
-            string hash = BCrypt.Net.BCrypt.HashPassword(password);
-
+            // "using" fecha conexão automaticamente
+            // mesmo se ocorrer erro
             using (var conn = Database.GetConnection())
             {
-                string sql = "INSERT INTO users (username, password) VALUES (@user, @pass)";
+                // SQL que busca senha do usuário
+                string sql =
+                    "SELECT password FROM users WHERE username=@user";
+
+                // Objeto responsável por executar SQL
+                using (var cmd = new MySqlCommand(sql, conn))
+                {
+                    // Passa valor para parâmetro @user
+                    // Isso evita SQL Injection
+                    cmd.Parameters.AddWithValue("@user", username);
+
+                    // ExecuteScalar retorna apenas UM valor
+                    // Nesse caso: a senha(hash)
+                    var result = cmd.ExecuteScalar();
+
+                    // Se encontrou usuário
+                    if (result != null)
+                    {
+                        // Converte resultado para string
+                        string hash = result.ToString();
+
+                        // BCrypt compara senha digitada
+                        // com hash salvo no banco
+                        bool senhaCorreta =
+                            BCrypt.Net.BCrypt.Verify(password, hash);
+
+                        // Se senha estiver correta
+                        if (senhaCorreta)
+                        {
+                            MessageBox.Show("Login realizado!");
+
+                            // Abre tela principal
+                            FormMain main = new FormMain(username);
+
+                            main.Show();
+
+                            // Esconde tela atual
+                            this.Hide();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Senha incorreta!");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Usuário não encontrado!");
+                    }
+                }
+            }
+        }
+
+        // =====================================================
+        // BOTÃO CADASTRO
+        // =====================================================
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            // Pega valores digitados
+            string username = txtUsername.Text.Trim();
+            string password = txtPassword.Text;
+
+            // Cria hash da senha
+            // Nunca salvamos senha pura
+            string hash =
+                BCrypt.Net.BCrypt.HashPassword(password);
+
+            // Abre conexão
+            using (var conn = Database.GetConnection())
+            {
+                // SQL de INSERT
+                string sql =
+                    "INSERT INTO users (username, password) VALUES (@user, @pass)";
 
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
+                    // Passa valores para parâmetros
                     cmd.Parameters.AddWithValue("@user", username);
                     cmd.Parameters.AddWithValue("@pass", hash);
 
                     try
                     {
+                        // Executa INSERT
                         cmd.ExecuteNonQuery();
+
                         MessageBox.Show("Usuário criado com sucesso!");
                     }
                     catch
                     {
+                        // Caso usuário já exista
                         MessageBox.Show("Erro: usuário já existe!");
                     }
                 }
@@ -217,18 +419,148 @@ using (var conn = Database.GetConnection())
 
 ---
 
-# **6️⃣ Criar FormMain (tela após login)**
+# Explicando Conceitos do FormLogin
 
-Adicione:
+# Evento Click
 
-* Label: `lblWelcome`
-* Button: `btnLogout`
+```csharp id="3j9nzt"
+private void btnLogin_Click(object sender, EventArgs e)
+```
+
+Esse método executa quando clicamos no botão.
 
 ---
 
-## **📌 Código FormMain**
+# `private`
 
-```csharp
+Só a própria classe pode usar.
+
+---
+
+# `void`
+
+O método não retorna valor.
+
+---
+
+# `.Text`
+
+```csharp id="55m4mx"
+txtUsername.Text
+```
+
+Pega o texto digitado.
+
+---
+
+# `.Trim()`
+
+Remove espaços extras.
+
+Exemplo:
+
+```text id="ykhqkh"
+" joao "
+```
+
+vira:
+
+```text id="vzh7f6"
+"joao"
+```
+
+---
+
+# `using`
+
+```csharp id="6p0pwm"
+using (var conn = Database.GetConnection())
+```
+
+Libera memória automaticamente.
+
+Muito usado com:
+
+* banco
+* arquivos
+* conexões
+
+---
+
+# SQL Injection
+
+Usamos parâmetros:
+
+```csharp id="8i7p8w"
+@user
+```
+
+para evitar ataques.
+
+---
+
+# ExecuteScalar
+
+```csharp id="tdr1yj"
+cmd.ExecuteScalar();
+```
+
+Retorna apenas um valor.
+
+---
+
+# BCrypt
+
+## Hash da senha
+
+```csharp id="q3gl31"
+BCrypt.Net.BCrypt.HashPassword(password);
+```
+
+Transforma senha em hash.
+
+---
+
+## Verificação
+
+```csharp id="q3hxv2"
+BCrypt.Net.BCrypt.Verify(password, hash);
+```
+
+Compara senha digitada com hash.
+
+---
+
+# Por que usar hash?
+
+Nunca devemos salvar senha real.
+
+ERRADO:
+
+```text id="u1j5f9"
+123456
+```
+
+CERTO:
+
+```text id="5oqr3z"
+$2a$11$asd89as7d...
+```
+
+---
+
+# 6. Criando FormMain
+
+Adicione:
+
+* Label → `lblWelcome`
+* Button → `btnLogout`
+
+---
+
+# Código Completo do FormMain
+
+```csharp id="2vhq4k"
 using System;
 using System.Windows.Forms;
 
@@ -236,30 +568,61 @@ namespace LoginApp
 {
     public partial class FormMain : Form
     {
+        // Construtor
+        // Recebe nome do usuário
         public FormMain(string username)
         {
             InitializeComponent();
 
-            // mostra nome do usuário logado
-            lblWelcome.Text = "Bem-vindo, " + username;
+            // Mostra usuário logado
+            lblWelcome.Text =
+                "Bem-vindo, " + username;
         }
 
-        // =========================
+        // =====================================================
         // LOGOUT
-        // =========================
+        // =====================================================
         private void btnLogout_Click(object sender, EventArgs e)
         {
-            // volta para login
+            // Cria tela de login
             FormLogin login = new FormLogin();
+
+            // Mostra tela
             login.Show();
 
-            // fecha tela atual
+            // Fecha tela atual
             this.Close();
         }
     }
 }
 ```
 
+---
+
+# Fluxo do Sistema
+
+# Cadastro
+
+```text id="mpbf3g"
+Usuário digita senha
+↓
+BCrypt cria hash
+↓
+Hash vai para banco
+```
+
+---
+
+# Login
+
+```text id="p1l2o5"
+Usuário digita senha
+↓
+Sistema busca hash
+↓
+BCrypt compara
+↓
+Acesso liberado
+```
 
 
-Se quiser, posso fazer a **versão ainda mais simples (sem banco, só memória)** ou uma **versão com nível intermediário depois dessa**.
