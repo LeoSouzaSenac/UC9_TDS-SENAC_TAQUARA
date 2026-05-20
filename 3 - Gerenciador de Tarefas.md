@@ -67,31 +67,6 @@ Crie:
 
 ---
 
-# Program.cs
-
-```csharp id="prog1"
-using System;
-using System.Windows.Forms;
-
-namespace TodoApp
-{
-    internal static class Program
-    {
-        [STAThread]
-        static void Main()
-        {
-            // Inicializa configurações do Windows Forms
-            ApplicationConfiguration.Initialize();
-
-            // Abre a primeira tela do sistema (Form1)
-            Application.Run(new Form1());
-        }
-    }
-}
-```
-
----
-
 # Database.cs
 
 ```csharp id="db1"
