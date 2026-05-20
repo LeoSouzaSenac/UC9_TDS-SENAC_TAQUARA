@@ -20,7 +20,7 @@ O sistema deve permitir:
 ## 1. Criar projeto
 
 * Abra o Visual Studio
-* Clique em "Create a new project"
+* Clique em “Create a new project”
 * Escolha: Windows Forms App (.NET)
 * Nome: TodoApp
 
@@ -35,8 +35,6 @@ Instale:
 ---
 
 ## 3. Criar banco de dados
-
-Execute no MySQL:
 
 ```sql id="sql1"
 CREATE DATABASE todo_app;
@@ -53,17 +51,62 @@ CREATE TABLE tasks (
 
 ---
 
-## 4. Criar arquivos no projeto
+# 4. ELEMENTOS DA TELA (IMPORTANTE)
 
-Crie:
-
-* Database.cs
-* TaskItem.cs
-* Form1.cs
+Crie no Form1 os seguintes componentes:
 
 ---
 
-# CÓDIGO COMPLETO
+## TEXTBOX
+
+* Name: `txtTask`
+* Função: onde o usuário digita a tarefa
+
+---
+
+## BUTTON 1
+
+* Name: `btnAdd`
+* Text: `Adicionar`
+* Função: inserir nova tarefa no banco
+
+---
+
+## BUTTON 2
+
+* Name: `btnComplete`
+* Text: `Concluir`
+* Função: marcar tarefa como feita
+
+---
+
+## BUTTON 3
+
+* Name: `btnDelete`
+* Text: `Excluir`
+* Função: apagar tarefa
+
+---
+
+## DATAGRIDVIEW
+
+* Name: `gridTasks`
+* Função: mostrar todas as tarefas do banco
+
+---
+
+## EVENTOS IMPORTANTES
+
+No Form1:
+
+* Form Load → `Form1_Load`
+* btnAdd → `btnAdd_Click`
+* btnComplete → `btnComplete_Click`
+* btnDelete → `btnDelete_Click`
+
+---
+
+# 5. CÓDIGO COMPLETO
 
 ---
 
@@ -77,27 +120,28 @@ namespace TodoApp
 {
     public static class Database
     {
-        // String que contém as informações para conectar no banco
+        // string de conexão com o banco de dados
+        // aqui você coloca servidor, banco, usuário e senha
         private static string connectionString =
             "server=localhost;database=todo_app;uid=root;pwd=sua_senha;";
 
         public static MySqlConnection GetConnection()
         {
-            // Cria objeto de conexão com o banco de dados
+            // cria objeto de conexão com o MySQL
             MySqlConnection conn = new MySqlConnection(connectionString);
 
             try
             {
-                // Abre a conexão com o banco
+                // abre a conexão com o banco
                 conn.Open();
 
-                // Retorna a conexão já aberta para ser usada
+                // retorna conexão aberta para uso
                 return conn;
             }
             catch (Exception ex)
             {
-                // Caso dê erro na conexão, mostra mensagem explicando o erro
-                throw new Exception("Erro ao conectar com o banco: " + ex.Message);
+                // mostra erro caso conexão falhe
+                throw new Exception("Erro ao conectar: " + ex.Message);
             }
         }
     }
@@ -113,13 +157,13 @@ namespace TodoApp
 {
     public class TaskItem
     {
-        // Identificador único da tarefa no banco de dados
+        // id da tarefa no banco
         public int Id { get; set; }
 
-        // Texto da tarefa (ex: "Estudar C#")
+        // texto da tarefa digitada pelo usuário
         public string Title { get; set; }
 
-        // Indica se a tarefa está concluída ou não
+        // indica se a tarefa foi concluída ou não
         public bool IsDone { get; set; }
     }
 }
@@ -127,7 +171,7 @@ namespace TodoApp
 
 ---
 
-# Form1.cs (TODA LÓGICA DO SISTEMA)
+# Form1.cs (TODA LÓGICA)
 
 ```csharp id="form1"
 using System;
@@ -141,73 +185,73 @@ namespace TodoApp
     {
         public Form1()
         {
-            // Cria todos os elementos da tela (botões, tabela, etc)
+            // cria todos os componentes da tela
             InitializeComponent();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // Quando o sistema abre, carregamos todas as tarefas
+            // quando o sistema abre, carrega tarefas do banco
             LoadTasks();
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            // Pega o texto digitado pelo usuário na caixa de texto
+            // pega texto digitado pelo usuário
             string title = txtTask.Text.Trim();
 
-            // Se o campo estiver vazio, não deixa continuar
+            // se estiver vazio, cancela operação
             if (string.IsNullOrWhiteSpace(title))
             {
                 MessageBox.Show("Digite uma tarefa");
                 return;
             }
 
-            // Abre conexão com o banco de dados
+            // abre conexão com banco
             using (var conn = Database.GetConnection())
             {
-                // SQL com espaços chamados parâmetros (@user e @title)
+                // SQL com parâmetros (evita erro e ataque)
                 string sql = "INSERT INTO tasks (user_id, title) VALUES (@user, @title)";
 
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
-                    // Aqui estamos preenchendo o valor do parâmetro @user
+                    // @user representa o id do usuário
                     cmd.Parameters.AddWithValue("@user", 1);
 
-                    // Aqui estamos preenchendo o valor do parâmetro @title
+                    // @title recebe o texto digitado
                     cmd.Parameters.AddWithValue("@title", title);
 
-                    // Executa o comando no banco (INSERT, UPDATE ou DELETE)
+                    // executa INSERT no banco
                     cmd.ExecuteNonQuery();
                 }
             }
 
-            // Limpa o campo de texto depois de adicionar
+            // limpa campo de texto
             txtTask.Clear();
 
-            // Atualiza a lista na tela
+            // recarrega lista
             LoadTasks();
         }
 
         private void LoadTasks()
         {
-            // Abre conexão com o banco de dados
+            // abre conexão com banco
             using (var conn = Database.GetConnection())
             {
-                // Busca todas as tarefas do usuário 1
+                // busca tarefas do usuário 1
                 string sql = "SELECT * FROM tasks WHERE user_id = 1";
 
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
                     using (var reader = cmd.ExecuteReader())
                     {
-                        // Cria uma tabela em memória para armazenar os dados
+                        // cria tabela em memória
                         DataTable table = new DataTable();
 
-                        // Copia os dados do banco para a tabela em memória
+                        // joga dados do banco dentro da tabela
                         table.Load(reader);
 
-                        // Mostra os dados na tabela da tela (DataGridView)
+                        // mostra dados na tela
                         gridTasks.DataSource = table;
                     }
                 }
@@ -216,69 +260,67 @@ namespace TodoApp
 
         private void btnComplete_Click(object sender, EventArgs e)
         {
-            // Verifica se o usuário selecionou alguma linha da tabela
+            // verifica se alguma linha foi selecionada
             if (gridTasks.CurrentRow == null)
                 return;
 
-            // Pega o ID da tarefa selecionada na tabela
+            // pega id da linha selecionada
             int id = Convert.ToInt32(
                 gridTasks.CurrentRow.Cells["id"].Value
             );
 
-            // Explicação:
-            // gridTasks -> tabela da tela
-            // CurrentRow -> linha selecionada pelo usuário
-            // Cells["id"] -> coluna chamada "id"
-            // Value -> valor dentro dessa célula
+            // CurrentRow = linha selecionada
+            // Cells["id"] = coluna id da tabela
+            // Value = valor dentro da célula
 
             using (var conn = Database.GetConnection())
             {
-                // Atualiza a tarefa para "concluída"
                 string sql = "UPDATE tasks SET is_done = TRUE WHERE id = @id";
 
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
-                    // Preenche o parâmetro @id com o valor da tarefa selecionada
+                    // substitui @id pelo id da tarefa
                     cmd.Parameters.AddWithValue("@id", id);
 
-                    // Executa o UPDATE no banco
+                    // executa UPDATE
                     cmd.ExecuteNonQuery();
                 }
             }
 
-            // Atualiza a lista
+            // atualiza lista
             LoadTasks();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            // Verifica se alguma linha foi selecionada
+            // verifica se linha foi selecionada
             if (gridTasks.CurrentRow == null)
                 return;
 
-            // Pega o ID da tarefa selecionada
+            // pega id da tarefa selecionada
             int id = Convert.ToInt32(
                 gridTasks.CurrentRow.Cells["id"].Value
             );
 
             using (var conn = Database.GetConnection())
             {
-                // Remove a tarefa do banco de dados
                 string sql = "DELETE FROM tasks WHERE id = @id";
 
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
-                    // Preenche o parâmetro @id com o ID selecionado
+                    // substitui @id pelo valor real
                     cmd.Parameters.AddWithValue("@id", id);
 
-                    // Executa o DELETE no banco
+                    // executa DELETE
                     cmd.ExecuteNonQuery();
                 }
             }
 
-            // Atualiza a lista na tela
+            // atualiza lista
             LoadTasks();
         }
     }
 }
 ```
+
+Só me fala o nível da turma.
